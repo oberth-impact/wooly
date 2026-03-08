@@ -1,0 +1,40 @@
+name: Sync Facebook Posts
+
+on:
+  schedule:
+    - cron: '15 */6 * * *'  # Every 6 hours at :15
+  workflow_dispatch:          # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run sync script
+        env:
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+        run: python scripts/sync_fb.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/ posts.json
+          git diff --staged --quiet && echo "No changes to commit" && exit 0
+          git commit -m "Sync Facebook posts $(date -u +%Y-%m-%d\ %H:%M)"
+          git push
