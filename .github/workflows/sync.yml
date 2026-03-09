@@ -2,7 +2,7 @@ name: Sync Facebook Posts
 
 on:
   schedule:
-    - cron: '15 */6 * * *'  # Every 6 hours at :15
+    - cron: '15 * * * *'  # Every hour at :15
   workflow_dispatch:          # Manual trigger
 
 permissions:
