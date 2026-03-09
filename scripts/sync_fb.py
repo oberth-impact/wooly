@@ -27,7 +27,7 @@ import requests
 
 FB_PAGE_TOKEN = os.environ.get('FB_PAGE_TOKEN', '')
 FB_PAGE_ID = os.environ.get('FB_PAGE_ID', '')
-FB_API_VERSION = 'v21.0'
+FB_API_VERSION = 'v25.0'
 FB_API_BASE = 'https://graph.facebook.com/{}'.format(FB_API_VERSION)
 
 MAX_POSTS = 30
@@ -71,10 +71,7 @@ def fetch_posts(session):
 
     url = '{}/{}/posts'.format(FB_API_BASE, FB_PAGE_ID)
     params = {
-        'fields': (
-            'id,message,created_time,full_picture,permalink_url,'
-            'type,attachments{media,type,url,title,description,subattachments}'
-        ),
+        'fields': 'id,message,created_time,full_picture,permalink_url',
         'limit': POST_FETCH_LIMIT,
         'access_token': FB_PAGE_TOKEN,
     }
@@ -224,14 +221,7 @@ def escape_html(text):
 
 def is_video_post(post):
     # type: (Dict) -> bool
-    post_type = post.get('type', '')
-    if post_type == 'video':
-        return True
-    attachments = post.get('attachments', {}).get('data', [])
-    for att in attachments:
-        if att.get('type') in ('video_inline', 'video_autoplay', 'video'):
-            return True
-    return False
+    return False  # type field deprecated in Graph API v25.0+
 
 
 def render_post_card(post):

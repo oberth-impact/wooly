@@ -59,8 +59,10 @@ wooly-page/
 ## Facebook API details
 
 - **Page**: facebook.com/woolypigbrewery
-- **API version**: v24.0+ (use latest stable)
-- **Endpoint**: `GET /{page_id}/posts?fields=id,message,created_time,full_picture,permalink_url,type,attachments`
+- **Page ID**: 200662070448291
+- **API version**: v25.0
+- **Endpoint**: `GET /{page_id}/posts?fields=id,message,created_time,full_picture,permalink_url`
+- **Note**: `type` and `attachments` fields deprecated in Graph API v3.3+
 - **Permissions**: `pages_show_list`, `pages_read_engagement`, `pages_read_user_content`
 - **Secrets** (GitHub Actions): `FB_PAGE_TOKEN`, `FB_PAGE_ID`
 
