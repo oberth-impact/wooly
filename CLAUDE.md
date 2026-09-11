@@ -8,9 +8,13 @@ A GitHub Actions + GitHub Pages static site that syncs Facebook Page posts from 
 
 Facebook stopped recommending places that sell alcohol. The brewery's primary content is on FB, so they need that content mirrored to a web page that search engines can find and index.
 
+## Knowledge base (wiki)
+
+Architecture details, Facebook token procedures, branding, incident write-ups, and decision history for this project live in the home wiki at `../wiki`. Start from `../wiki/pages/projects/wooly.md` (hub) or `../wiki/index.md`. Check it before re-deriving how something works. When a session produces a durable finding, offer to file it by following `../wiki/.claude/skills/wiki-ingest/SKILL.md` before the session ends.
+
 ## Architecture
 
-- **GitHub Action** runs every 6 hours (cron) + manual trigger
+- **GitHub Action** runs hourly at :15 (cron `15 * * * *`) + manual trigger
 - **Python script** (`scripts/sync_fb.py`) fetches posts via Facebook Graph API, downloads images, generates static HTML
 - **Output** goes to `docs/` folder, served by GitHub Pages
 - **Custom domain**: `feed.woolypigfarmbrewery.com` via CNAME record in Squarespace DNS
@@ -18,16 +22,13 @@ Facebook stopped recommending places that sell alcohol. The brewery's primary co
 
 ## Key design decisions
 
-- **No templating engine.** HTML is generated with plain Python f-strings/str.format(). Only dependency is `requests`. Matches the pub/ project pattern.
-- **Images are committed to repo**, not hotlinked from FB CDN. Content-hash filenames for idempotency.
-- **`posts.json` cache** persists between runs. If the API fails, the last good data is preserved.
-- **Never-expiring Page Access Token** (generated from long-lived user token via `me/accounts` endpoint). Only invalidates if admin changes FB password or revokes app.
+See ../wiki/pages/systems/wooly-fb-sync.md and ../wiki/pages/decisions/wooly-history-squash.md. Before changing image handling, read ../wiki/pages/incidents/2026-08-14-wooly-image-bloat.md.
 
 ## Repo structure
 
 ```
 wooly-page/
-  .github/workflows/sync.yml       # Cron workflow (every 6h) + manual trigger
+  .github/workflows/sync.yml       # Cron workflow (hourly at :15) + manual trigger
   scripts/
     sync_fb.py                      # Main script: fetch, download, render
     requirements.txt                # requests (only dependency)
@@ -44,41 +45,24 @@ wooly-page/
   posts.json                        # Cached post data
 ```
 
-## Brewery branding (from woolypigfarmbrewery.com)
+## Brewery branding
 
-- **Background**: Dark brown `#4A3C31`
-- **Nav text**: White uppercase, Raleway, 2px letter-spacing
-- **Active nav**: Gold `#FFCC00` (the "FEED" link)
-- **Heading font**: Oswald (Google Fonts)
-- **Body/nav font**: Raleway (Google Fonts)
-- **Content areas**: White `#FFFFFF` backgrounds
-- **Teal accent**: ~`#1B5A5A` (used in hero sections)
-- **Logo**: "WOOLY PIG / FARM BREWERY" wordmark, white on brown
-- **Footer**: Circular red-pigs-on-teal badge, Ohio Craft Beer badge, location/hours/social links, Instagram grid thumbnails
+Colors and fonts (verified against static/style.css): ../wiki/pages/projects/wooly.md.
 
 ## Facebook API details
 
-- **Page**: facebook.com/woolypigbrewery
-- **Page ID**: 200662070448291
-- **API version**: v25.0
-- **Endpoint**: `GET /{page_id}/posts?fields=id,message,created_time,full_picture,permalink_url`
-- **Note**: `type` and `attachments` fields deprecated in Graph API v3.3+
-- **Permissions**: `pages_show_list`, `pages_read_engagement`, `pages_read_user_content`
 - **Secrets** (GitHub Actions): `FB_PAGE_TOKEN`, `FB_PAGE_ID`
+- Page id, API version, fields, permissions, and token refresh (Rob is admin, not owner): ../wiki/pages/systems/wooly-fb-sync.md and ../wiki/pages/services/facebook-graph-api.md.
 
-## Footer info (from live site, Winter 2026)
+## Footer info
 
-- Location: 23631 TR 167, Fresno, Ohio
-- Phone: (740) 693-5050
-- Hours: Wed & Th 4-9pm, Fri 1-9pm, Sat 12-9pm, Sun 12-7pm, Mon-Tue closed
-- Instagram: instagram.com/woolypigfarmbrewery
-- Facebook: facebook.com/woolypigbrewery
+Footer facts: ../wiki/pages/projects/wooly.md.
 
 ## Related projects
 
 - `C:\Users\rob\Documents\claude\pub\` -- Columbus Science Pub project with similar automation patterns
   - `ticket-sales-viz/live_scraper.py` -- reference for scripting style (config block, function-per-concern, requests.Session)
-  - `CLAUDE.md` lines 62-73 -- GitHub Pages custom domain setup notes (DNS TTL strategy, HTTPS provisioning)
+  - GitHub Pages custom domain setup (DNS TTL strategy, HTTPS provisioning): ../wiki/pages/services/github-pages-hugo.md
 - `C:\Users\rob\Documents\python learning files\evansrc2\` -- Hugo site on GitHub Pages (reference for Actions workflow)
 
 ## Working preferences
